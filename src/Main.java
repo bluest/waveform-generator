@@ -26,6 +26,8 @@ import org.apache.commons.io.FilenameUtils;
 
 public class Main extends JFrame {
 
+	
+	private File audioFile;
 	private JPanel contentPane;
 
 	/**
@@ -50,6 +52,7 @@ public class Main extends JFrame {
 	public Main() {
 		setTitle("Waveform Generator");
 		WaveformPanelContainer waveformPanelContainer;
+		audioFile = new File("");
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -76,7 +79,7 @@ public class Main extends JFrame {
 				filePicker.setFileFilter(wavFilter);
 				filePicker.setAcceptAllFileFilterUsed(false);
 				filePicker.showOpenDialog(null);
-				File audioFile = filePicker.getSelectedFile();
+				audioFile = filePicker.getSelectedFile();
 				AudioInputStream audioInputStream;
 				try {
 					audioInputStream = AudioSystem.getAudioInputStream(new BufferedInputStream (new FileInputStream (audioFile)));
@@ -101,14 +104,13 @@ public class Main extends JFrame {
 		mntmSalvarImagem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setSelectedFile(new File(audioFile.getParentFile(), FilenameUtils.getBaseName(audioFile.getName())+".png")); //nome do arquivo de audio com a extensão png
 				int confirm = fileChooser.showSaveDialog(null);
 				if(confirm == JFileChooser.APPROVE_OPTION){
 					File image = fileChooser.getSelectedFile();
 					if (!FilenameUtils.getExtension(image.getName()).equalsIgnoreCase("png")) //se a extensão não for png
 						image = new File(image.getParentFile(), FilenameUtils.getBaseName(image.getName())+".png"); // remove a extensão (se tiver) e adiciona .png
-					BufferedImage finalImg = new BufferedImage(
-				            waveformPanelContainer.getWidth(), waveformPanelContainer.getHeight(), BufferedImage.TYPE_INT_ARGB);
-			        waveformPanelContainer.paint(finalImg.getGraphics());
+					BufferedImage finalImg = getScreenshot(waveformPanelContainer);
 					try {
 						ImageIO.write(finalImg, "PNG", image);
 					} catch (IOException e1) {
@@ -130,4 +132,18 @@ public class Main extends JFrame {
 		mnArquivo.add(mntmLimpar);
 	}
 
+	public BufferedImage getScreenshot(
+		    JPanel component) {
+
+		    BufferedImage image = new BufferedImage(
+		      component.getWidth(),
+		      component.getHeight(),
+		      BufferedImage.TYPE_INT_RGB
+		      );
+		    // call the Component's paint method, using
+		    // the Graphics object of the image.
+		    component.paint( image.getGraphics() ); // alternately use .printAll(..)
+		    return image;
+	}
+	
 }
